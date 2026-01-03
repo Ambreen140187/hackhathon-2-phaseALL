@@ -4,6 +4,7 @@ import { Outfit } from 'next/font/google'
 import { ThemeProvider } from '@/lib/theme'
 import { ToastProvider } from '@/components/ui/Toast'
 import Header from '@/components/layout/Header'
+import PageTransition from '@/components/layout/PageTransition'
 
 /**
  * T009: Configure Outfit font (Premium, Geometric)
@@ -37,7 +38,11 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider>
             <Header />
-            <main>{children}</main>
+              <main>
+                <PageTransition>
+                  {children}
+                </PageTransition>
+              </main>
           </ToastProvider>
         </ThemeProvider>
       </body>

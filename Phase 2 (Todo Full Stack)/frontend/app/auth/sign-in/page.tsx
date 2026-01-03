@@ -45,15 +45,14 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-primary rounded-full blur-[80px]" />
-        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full blur-[80px]" />
-      </div>
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-6 relative overflow-hidden auth-background">
+      {/* Animated background blobs */}
+      <div className="blob large" style={{ top: '-6rem', left: '-10rem', background: 'radial-gradient(circle at 20% 30%, rgba(99,102,241,0.9), rgba(124,58,237,0.5))' }} />
+      <div className="blob medium" style={{ bottom: '-6rem', right: '-6rem', background: 'radial-gradient(circle at 70% 70%, rgba(236,72,153,0.85), rgba(139,92,246,0.4))', animationDelay: '1.5s' }} />
+      <div className="blob small" style={{ top: '20%', right: '-4rem', background: 'radial-gradient(circle at 40% 40%, rgba(56,189,248,0.7), rgba(99,102,241,0.2))', animationDelay: '3s' }} />
 
-      <div className="w-full max-w-md animate-welcome">
-        <div className="glass-premium rounded-[2.5rem] p-8 md:p-10 border border-white/20">
+      <div className="w-full max-w-md animate-welcome z-10">
+        <div className="glass-premium rounded-[2.5rem] p-8 md:p-10 border border-white/20 relative z-10">
           <div className="flex flex-col items-center text-center mb-10">
             <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/30 mb-6 animate-float">
               <CheckCircle2 className="w-10 h-10" />

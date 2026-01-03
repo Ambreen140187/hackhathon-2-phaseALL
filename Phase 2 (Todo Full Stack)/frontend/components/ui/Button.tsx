@@ -118,6 +118,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-2',
       // T019: Hover micro-lift animation
       'hover:-translate-y-0.5 transition-all duration-300 ease-out-cubic',
+      // Neon accent for primary buttons
+      variant === 'primary' ? 'neon' : '',
       // Disabled state
       'disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0',
       // Full width option

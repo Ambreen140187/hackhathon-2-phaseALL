@@ -47,15 +47,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const hasError = !!error;
 
     return (
-      <div className="w-full">
+      <div className="w-full group">
         {/* Label */}
         {label && (
           <label
             className={cn(
-              'block text-sm font-medium mb-2 transition-colors duration-300 ease-out-cubic',
+              'block text-sm font-medium mb-2 transition-all duration-200 ease-out-cubic transform-gpu',
+              // subtle float/scale when input focused
+              'group-focus-within:-translate-y-0.5 group-focus-within:scale-95',
               hasError
                 ? 'text-rose-600 dark:text-rose-400'
-                : 'text-slate-700 dark:text-slate-300'
+                : 'text-slate-700 dark:text-slate-300 group-focus-within:text-primary'
             )}
           >
             {label}

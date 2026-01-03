@@ -107,6 +107,14 @@
       box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
     }
   }
+
+  @keyframes blob {
+    0% { transform: translateY(0) translateX(0) scale(1); }
+    25% { transform: translateY(-20px) translateX(10px) scale(1.05); }
+    50% { transform: translateY(10px) translateX(-10px) scale(0.95); }
+    75% { transform: translateY(-5px) translateX(5px) scale(1.02); }
+    100% { transform: translateY(0) translateX(0) scale(1); }
+  }
 }
 
 @layer base {
@@ -204,6 +212,48 @@
 
   .section-vertical {
     @apply py-12 md:py-24 lg:py-32;
+  }
+
+  /* Auth background with animated gradient blobs and subtle constellation */
+  .auth-background {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .auth-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 10% 20%, rgba(99,102,241,0.06), transparent 10%),
+                radial-gradient(ellipse at 90% 80%, rgba(236,72,153,0.04), transparent 10%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.9;
+    transform-origin: center;
+    animation: blob 8s ease-in-out infinite;
+    mix-blend-mode: screen;
+    z-index: 0;
+  }
+
+  .blob.small { width: 10rem; height: 10rem; }
+  .blob.medium { width: 18rem; height: 18rem; }
+  .blob.large { width: 28rem; height: 28rem; }
+
+  /* Neon accent for primary buttons */
+  .neon {
+    transition: box-shadow 250ms ease, transform 200ms ease;
+  }
+
+  .neon:hover {
+    box-shadow: 0 8px 40px rgba(99,102,241,0.28), 0 0 30px rgba(99,102,241,0.12) inset;
+    transform: translateY(-4px) scale(1.01);
   }
 }
 

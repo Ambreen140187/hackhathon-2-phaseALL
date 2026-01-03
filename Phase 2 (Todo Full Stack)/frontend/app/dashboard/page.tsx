@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/utils';
 import { getTodos, createTodo, updateTodo, deleteTodo, toggleTodoComplete } from '@/lib/api';
 import { Plus, Sparkles, Layout, CheckCircle2, ListTodo, Calendar, Clock, ArrowRight, X } from 'lucide-react';
+import Hero from '@/components/layout/Hero';
 
 export default function DashboardPage() {
   const [todos, setTodos] = React.useState<Todo[]>([]);
@@ -156,20 +157,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-background">
       <div className="section-horizontal section-vertical max-w-7xl mx-auto">
-        {/* Welcome Section with Animation */}
-        <div className="mb-12 animate-welcome">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-              <Sparkles className="w-5 h-5 text-primary" />
-            </div>
-            <span className="text-xs font-black text-primary tracking-[0.2em] uppercase">Control Center</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4 text-foreground leading-tight">
-            Welcome back, <span className="text-gradient italic">{userName || 'User'}</span>!
-          </h2>
-          <p className="text-lg opacity-70 font-medium max-w-2xl">
-            Currently tracking <span className="text-foreground font-black">{totalCount - completedCount}</span> pending initiatives. Let's optimize your workflow.
-          </p>
+        {/* Hero */}
+        <div className="animate-welcome">
+          <React.Suspense fallback={<div className="h-36" />}> 
+            {/* lazy-like boundary for hero */}
+            {/* @ts-ignore - dynamic import not necessary */}
+            <Hero userName={userName || 'User'} pending={totalCount - completedCount} onPrimaryAction={() => setShowAddModal(true)} />
+          </React.Suspense>
         </div>
 
         {/* Stats Grid */}

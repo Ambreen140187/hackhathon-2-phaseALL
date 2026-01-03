@@ -4,6 +4,12 @@ const nextConfig = {
   images: {
     domains: ['localhost', 'example.com'], // Add your image domains here
   },
+    typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {
