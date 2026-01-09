@@ -44,6 +44,7 @@ async def update_task(
             task.description = description
         if status is not None:
             task.status = status
+            task.completed = (status.lower() == "completed")
 
         # Update the task in the database
         db.add(task)

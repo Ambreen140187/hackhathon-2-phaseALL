@@ -25,6 +25,7 @@ async def add_task(user_id: str, title: str, description: str = None, status: st
         title=title,
         description=description,
         status=status,
+        completed=(status.lower() == "completed"),
         user_id=user_id  # Ensure user isolation
     )
 

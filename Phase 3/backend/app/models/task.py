@@ -5,6 +5,7 @@ from .base import TimestampMixin
 class TaskBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: Optional[str] = None
+    status: str = Field(default="pending", index=True)
     completed: bool = Field(default=False, index=True)
 
 class Task(TimestampMixin, TaskBase, table=True):
@@ -17,4 +18,5 @@ class TaskCreate(TaskBase):
 class TaskUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    status: Optional[str] = None
     completed: Optional[bool] = None

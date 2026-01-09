@@ -29,6 +29,7 @@ async def complete_task(user_id: str, task_id: int, db = None) -> Dict[str, Any]
 
         # Update task status to completed
         task.status = "completed"
+        task.completed = True
         db.add(task)
         await db.commit()
         await db.refresh(task)

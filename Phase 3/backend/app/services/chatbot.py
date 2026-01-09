@@ -62,15 +62,16 @@ class ChatbotService:
         - get_current_user: Retrieve detailed profile info
         
         ### OPERATIONAL RULES:
-        1. When {user_name} asks to perform an action (add, mark complete, etc.), call the tool IMMEDIATELY.
+        1. When {user_name} asks to perform an action (add, mark complete, delete, etc.), call the tool IMMEDIATELY.
         2. Format tool calls as a single JSON block:
            ```json
            {{"tool": "tool_name", "params": {{"key": "value"}}}}
            ```
-        3. After tool execution, use the result to give a natural, human-like confirmation in the user's preferred language.
-        4. If {user_name} asks "Who am I?", call `get_current_user`.
-        5. For "marks bhi lagado" or "complete kardo", use `complete_task`.
-        6. For "list dikhao" or "show my tasks", use `list_tasks`.
+        3. For "delete kardo" or "baqi tasks khatam kardo", use `delete_task` with the correct ID.
+        4. If you don't have the task ID, ask the user for it or list the tasks first.
+        5. After tool execution, a confirmation will be shown.
+        6. For "marks bhi lagado" or "complete kardo", use `complete_task`.
+        7. For "list dikhao" or "show my tasks", use `list_tasks`.
         """
 
     async def _get_user_info(self, db, user_id: str) -> Dict[str, str]:
@@ -142,6 +143,68 @@ class ChatbotService:
 
         return result
 
+    def _generate_tool_response(self, tool_calls_executed: List[Dict[str, Any]], user_language: str = "ur") -> str:
+        """Generate a natural confirmation message based on tool results."""
+        if not tool_calls_executed:
+            return "Main samajh nahi paya, kya aap phir se bol sakte hain?" if user_language == "ur" else "I couldn't understand that. Could you repeat?"
+
+        # Templates for responses
+        templates = {
+            "ur": { # Roman Urdu
+                "add_task": "✓ Task add ho gaya hai!",
+                "complete_task": "✓ Task complete ho gaya hai!",
+                "delete_task": "✓ Task delete kar diya gaya hai!",
+                "update_task": "✓ Task update ho gaya hai!",
+                "list_tasks": "Yeh rahe aapke tasks:",
+                "get_current_user": "Aapki profile information yeh hai:"
+            },
+            "en": {
+                "add_task": "✓ Task added successfully!",
+                "complete_task": "✓ Task marked as complete!",
+                "delete_task": "✓ Task deleted successfully!",
+                "update_task": "✓ Task updated successfully!",
+                "list_tasks": "Here are your tasks:",
+                "get_current_user": "Here is your profile information:"
+            }
+        }
+
+        lang = "ur" if user_language == "ur" else "en"
+        msgs = []
+
+        for call in tool_calls_executed:
+            tool = call["tool"]
+            result = call["result"]
+            
+            if "error" in result:
+                error_msg = result["error"]
+                if lang == "ur":
+                    msgs.append(f"❌ Error: {error_msg}")
+                else:
+                    msgs.append(f"❌ Error: {error_msg}")
+                continue
+
+            # Special handling for list_tasks
+            if tool == "list_tasks":
+                tasks = result.get("tasks", [])
+                if not tasks:
+                    msgs.append("Aapki list abhi khali hai." if lang == "ur" else "Your list is empty.")
+                else:
+                    msgs.append(templates[lang]["list_tasks"])
+                    for i, t in enumerate(tasks):
+                        status_char = "✅" if t.get("completed") else "⏳"
+                        msgs.append(f"{i+1}. [{t.get('id')}] {status_char} {t.get('title')}")
+            
+            # Special handling for get_current_user
+            elif tool == "get_current_user":
+                msgs.append(templates[lang]["get_current_user"])
+                msgs.append(f"Name: {result.get('name')}\nEmail: {result.get('email')}")
+            
+            # Default templates
+            else:
+                msgs.append(templates[lang].get(tool, "Done!"))
+
+        return "\n".join(msgs)
+
     async def _process_tool_calls(
         self,
         db,
@@ -152,7 +215,8 @@ class ChatbotService:
         """Extract and execute tool calls from text."""
         tool_calls_executed = []
         
-        pattern = r'```json\s*\n({.*?})\s*\n```'
+        # Robust pattern to catch JSON blocks
+        pattern = r'```json\s*\n?({.*?})\s*\n?```'
         matches = re.findall(pattern, response_text, re.DOTALL)
 
         for match in matches:
@@ -165,16 +229,23 @@ class ChatbotService:
                     tool_func = self.tools[tool_name]
                     
                     try:
+                        # Clean params
+                        params.pop("user_id", None)
+                        
+                        # IMPORTANT: Convert task_id to int if present, as tools expect int
+                        if "task_id" in params:
+                            try:
+                                params["task_id"] = int(params["task_id"])
+                            except (ValueError, TypeError):
+                                pass
+
                         # Tool execution
                         if tool_name == "get_current_user":
                             result = await tool_func(user_id, db)
                         else:
-                            # Clean params (remove user_id if AI added it, we pass it explicitly if needed)
-                            params.pop("user_id", None)
-                            # Add db session
                             result = await tool_func(user_id=user_id, db=db, **params)
                     except Exception as e:
-                        error_detail = f"Error executing {tool_name}: {str(e)}"
+                        error_detail = f"Error: {str(e)}"
                         print(f"Tool Execution Error: {error_detail}")
                         result = {"error": error_detail}
 
@@ -245,9 +316,24 @@ class ChatbotService:
             
             if executed:
                 all_tool_calls.extend(executed)
-                # If tools were executed, we use the results to prompt the AI for a final natural response
-                # We feed the tool results back as the "message" for the next iteration
-                current_input = f"Tool Execution Results: {json.dumps([e['result'] for e in executed])}. Now provide a natural response to the user."
+                
+                # OPTIMIZATION: Instead of calling AI again, generate an immediate confirmation
+                # This makes the response ~2x faster.
+                final_text = self._generate_tool_response(executed, user_language="ur")
+                
+                # Save final response to DB
+                await self.message_repo.create(
+                    db=db,
+                    conversation_id=conversation_id,
+                    role="assistant",
+                    content=final_text
+                )
+                
+                return {
+                    "conversation_id": conversation_id,
+                    "response": final_text,
+                    "tool_calls": all_tool_calls
+                }
             else:
                 # No more tools, this is the final natural response
                 # Save it to DB
