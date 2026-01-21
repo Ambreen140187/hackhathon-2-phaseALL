@@ -64,7 +64,8 @@
       "Bash(powershell -Command \"Invoke-WebRequest -Uri https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.exe -OutFile krew.exe\")",
       "Bash(powershell -Command \"docker version\")",
       "Bash(powershell -Command \"minikube start:*)",
-      "Bash(./helm.exe install todo-app charts/todo-app/ --set frontend.enabled=true --set backend.enabled=true --set frontend.image.repository=nginx --set frontend.image.tag=stable --set backend.image.repository=httpd --set backend.image.tag=latest --set global.ingress.enabled=true)"
+      "Bash(./helm.exe install todo-app charts/todo-app/ --set frontend.enabled=true --set backend.enabled=true --set frontend.image.repository=nginx --set frontend.image.tag=stable --set backend.image.repository=httpd --set backend.image.tag=latest --set global.ingress.enabled=true)",
+      "Bash(curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3)"
     ]
   }
 }
